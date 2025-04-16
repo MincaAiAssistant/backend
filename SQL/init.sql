@@ -3,8 +3,9 @@ CREATE TABLE users (
   id UUID PRIMARY KEY,
   email TEXT UNIQUE NOT NULL,
   username TEXT UNIQUE NOT NULL,
+  password TEXT NOT NULL,  -- store hashed passwords only!
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  auth_provider TEXT  -- e.g. 'Google', 'SharePoint'
+  auth_provider TEXT            -- e.g. 'Google', 'SharePoint', or NULL for local login
 );
 
 -- 2. Conversations table
