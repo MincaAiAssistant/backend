@@ -1,38 +1,46 @@
 {
-  "name": "backend",
+  "name": "thesis_be",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
     "start": "ts-node src/index.ts",
     "build": "tsc"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/MincaAiAssistant/backend.git"
-  },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/MincaAiAssistant/backend/issues"
-  },
-  "homepage": "https://github.com/MincaAiAssistant/backend#readme",
+  "description": "",
   "dependencies": {
     "@neondatabase/serverless": "^0.10.4",
+    "@types/node": "^22.8.6",
+    "axios": "^1.8.4",
     "bcrypt": "^5.1.1",
-    "dotenv": "^16.5.0",
-    "express": "^5.1.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.1",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.1.0",
+    "ioredis": "^5.4.1",
     "jsonwebtoken": "^9.0.2",
-    "pg": "^8.14.1"
+    "mongodb": "^6.15.0",
+    "redis": "^4.7.0",
+    "socket.io": "^4.8.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^4.6.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3",
+    "uuid": "^11.1.0",
+    "ws": "^8.18.0",
+    "xss-clean": "^0.1.4"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
-    "@types/express": "^5.0.1",
+    "@types/express": "^5.0.0",
     "@types/jsonwebtoken": "^9.0.9",
-    "nodemon": "^3.1.9",
-    "ts-node-dev": "^2.0.0",
-    "typescript": "^5.8.3"
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
+    "@types/ws": "^8.5.12",
+    "nodemon": "^3.1.7",
+    "prettier": "3.5.3"
   }
 }

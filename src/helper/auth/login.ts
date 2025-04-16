@@ -2,7 +2,6 @@ import 'dotenv/config';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { sql } from '../../db/postgres';
-
 /**
  * Handles user login.
  * @param email - The email of the user.
