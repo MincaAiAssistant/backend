@@ -19,8 +19,7 @@ export const uploadFilesHandler = async (
   try {
     const uploadResults = await Promise.all(
       files.map(async (file) => {
-        const fileExt = path.extname(file.originalname);
-        const key = `uploads/user_${userId}/${file.originalname}`;
+        const key = `knowledge-base/user_${userId}/${file.originalname}`;
 
         const uploadParams: PutObjectCommandInput = {
           Bucket: process.env.S3_BUCKET_NAME!,

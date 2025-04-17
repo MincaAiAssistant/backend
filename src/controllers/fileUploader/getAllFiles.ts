@@ -8,7 +8,7 @@ dotenv.config();
 export const getAllFiles = async (req: Request, res: Response) => {
   const userid = (req as any).user.userid;
   const bucket = process.env.S3_BUCKET_NAME!;
-  const prefix = `uploads/user_${userid}/`;
+  const prefix = `knowledge-base/user_${userid}/`;
 
   try {
     const command = new ListObjectsV2Command({
