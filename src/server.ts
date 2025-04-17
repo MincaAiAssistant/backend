@@ -1,6 +1,8 @@
 import express from 'express';
 import http from 'http';
 import { limiter } from './utils/rateLimiter';
+import routerAuth from './routes/auth';
+import routerUpload from './routes/upload';
 import helmet from 'helmet';
 import cors from 'cors';
 
@@ -23,3 +25,6 @@ app.use(
 app.use(limiter);
 
 app.use(express.json());
+
+app.use('/auth', routerAuth);
+app.use('/upload', routerUpload);

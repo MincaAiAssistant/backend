@@ -2,9 +2,11 @@ import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
 
 interface UserPayload {
-  userID: string;
-  name: string;
-  role: string;
+  id: string;
+  email: string;
+  username: string;
+  auth_provider?: string; // Optional, since not always used
+  role?: string; // Optional, in case you add a role column later
 }
 
 interface AuthenticatedRequest extends Request {
@@ -17,7 +19,7 @@ export const authenticateToken = (
   next: NextFunction
 ): void => {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // Extract token
+  const token = authHeader && authHeader.split(' ')[1];
 
   if (!token) {
     res.status(401).json({ error: 'Access denied. No token provided.' });
@@ -29,8 +31,9 @@ export const authenticateToken = (
       token,
       process.env.JWT_SECRET as string
     ) as UserPayload;
-    req.user = decoded; // Attach user data to req.user
-    next(); // Continue to the next middleware/route
+
+    req.user = decoded;
+    next();
   } catch (error) {
     res.status(403).json({ error: 'Invalid or expired token.' });
   }
@@ -38,7 +41,7 @@ export const authenticateToken = (
 
 export const authorizeRoles = (roles: string[]) => {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    if (!req.user || !roles.includes(req.user.role)) {
+    if (!req.user || !roles.includes(req.user.role ?? '')) {
       res.status(403).json({ error: 'Forbidden: Insufficient permissions' });
       return;
     }
