@@ -11,13 +11,11 @@ export const server = http.createServer(app);
 
 app.use(helmet());
 
+const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || [];
+
 app.use(
   cors({
-    origin: [
-      'http://localhost:5173',
-      'http://localhost:5174',
-      'https://d3rn5uwzh2n6e4.cloudfront.net',
-    ],
+    origin: allowedOrigins,
     credentials: true,
   })
 );
