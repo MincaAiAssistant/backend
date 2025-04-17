@@ -13,13 +13,23 @@ export const signUp = async (req: any, res: any) => {
 
   try {
     // Check if email already exists
-    const existingUser = await sql`
-      SELECT id FROM users WHERE email = ${email}
+    const existingEmail = await sql`
+      SELECT userid FROM users WHERE email = ${email}
     `;
 
-    if (existingUser.length > 0) {
+    if (existingEmail.length > 0) {
       return res.status(409).json({
         error: `User with email "${email}" already exists.`,
+      });
+    }
+
+    const existingUsername = await sql`
+      SELECT userid FROM users WHERE username = ${username}
+    `;
+
+    if (existingUsername.length > 0) {
+      return res.status(409).json({
+        error: `User with username "${username}" already exists.`,
       });
     }
 
@@ -27,16 +37,16 @@ export const signUp = async (req: any, res: any) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const result = await sql`
-      INSERT INTO users (id, email, username, password)
+      INSERT INTO users (userid, email, username, password)
       VALUES (gen_random_uuid(), ${email}, ${username}, ${hashedPassword})
-      RETURNING id, email, username
+      RETURNING userid, email, username
     `;
 
     const user = result[0] as User;
 
     const token = jwt.sign(
       {
-        id: user.id,
+        userid: user.userid,
         email: user.email,
         username: user.username,
       },

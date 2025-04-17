@@ -27,4 +27,4 @@ app.use(limiter);
 app.use(express.json());
 
 app.use('/auth', routerAuth);
-app.use('/upload', routerUpload);
+app.use('/knowledge-base', routerUpload);
