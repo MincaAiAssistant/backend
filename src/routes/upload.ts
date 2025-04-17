@@ -1,5 +1,4 @@
 import express, { Request, Response } from 'express';
-import multer from 'multer';
 import {
   PutObjectCommand,
   PutObjectCommandInput,
@@ -7,47 +6,24 @@ import {
   DeleteObjectCommand,
 } from '@aws-sdk/client-s3';
 import s3 from '../db/s3';
-import path from 'path';
 import dotenv from 'dotenv';
-import { uploadFileHandler } from '../controllers/fileUploader/uploadFiles';
-import { uploadFileMiddleware } from '../middleware/multerMiddleware';
+import { uploadFilesHandler } from '../controllers/fileUploader/uploadFiles';
+import { uploadFilesMiddleware } from '../middleware/multerMiddleware';
+import { getAllFiles } from '../controllers/fileUploader/getAllFiles';
+import { authenticateToken } from '../middleware/authMiddleware';
 
 dotenv.config();
 
 const routerUpload = express.Router();
 
-// Multer config to read file into memory
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
+routerUpload.post(
+  '/files',
+  uploadFilesMiddleware,
+  authenticateToken,
+  uploadFilesHandler
+);
 
-routerUpload.post('/:userId', uploadFileMiddleware, uploadFileHandler);
-
-routerUpload.get('/files/:userId', async (req: Request, res: Response) => {
-  const { userId } = req.params;
-  const bucket = process.env.S3_BUCKET_NAME!;
-  const prefix = `uploads/user_${userId}/`;
-
-  try {
-    const command = new ListObjectsV2Command({
-      Bucket: bucket,
-      Prefix: prefix,
-    });
-
-    const data = await s3.send(command);
-
-    const files =
-      data.Contents?.map((item) => ({
-        key: item.Key,
-        lastModified: item.LastModified,
-        size: item.Size,
-      })) || [];
-
-    res.json({ files });
-  } catch (error) {
-    console.error('S3 List Error:', error);
-    res.status(500).json({ error: 'Failed to list user files' });
-  }
-});
+routerUpload.get('/files', authenticateToken, getAllFiles);
 routerUpload.delete(
   '/files/:userId/:fileName',
   async (req: Request, res: Response) => {

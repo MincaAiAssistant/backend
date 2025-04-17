@@ -20,7 +20,7 @@ export const login = async (req: any, res: any) => {
   try {
     // Query user by email
     const result = await sql`
-      SELECT id, email, username, password
+      SELECT userid, email, username, password
       FROM users
       WHERE email = ${email}
     `;
@@ -41,7 +41,7 @@ export const login = async (req: any, res: any) => {
     // Generate JWT token
     const token = jwt.sign(
       {
-        id: user.id,
+        userid: user.userid,
         email: user.email,
         username: user.username,
       },
@@ -52,7 +52,7 @@ export const login = async (req: any, res: any) => {
     // Return response with user and token
     res.status(200).json({
       user: {
-        id: user.id,
+        userid: user.userid,
         email: user.email,
         username: user.username,
       },
