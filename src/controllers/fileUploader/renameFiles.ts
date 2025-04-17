@@ -6,7 +6,7 @@ import {
 } from '@aws-sdk/client-s3';
 import dotenv from 'dotenv';
 import s3 from '../../db/s3';
-import path from 'path';
+import mime from 'mime-types';
 
 dotenv.config();
 
@@ -18,6 +18,15 @@ export const renameFilesHandler = async (req: any, res: any) => {
     return res
       .status(400)
       .json({ error: 'Both oldFilename and newFilename are required' });
+  }
+
+  const oldMime = mime.lookup(oldFilename);
+  const newMime = mime.lookup(newFilename);
+
+  if (oldMime !== newMime) {
+    return res.status(400).json({
+      error: `Cannot rename file to a different type (${oldMime} → ${newMime})`,
+    });
   }
 
   if (oldFilename === newFilename) {
@@ -33,7 +42,14 @@ export const renameFilesHandler = async (req: any, res: any) => {
 
   try {
     // Check if old file exists
-    await s3.send(new HeadObjectCommand({ Bucket: bucket, Key: oldKey }));
+    try {
+      await s3.send(new HeadObjectCommand({ Bucket: bucket, Key: oldKey }));
+    } catch (err: any) {
+      if (err.name === 'NotFound') {
+        return res.status(404).json({ error: 'The file does not exist' });
+      }
+      throw err; // Unexpected error
+    }
 
     // Check if new file already exists
     try {
@@ -43,7 +59,7 @@ export const renameFilesHandler = async (req: any, res: any) => {
         .json({ error: 'A file with the new filename already exists' });
     } catch (err: any) {
       if (err.name !== 'NotFound') {
-        throw err; // If it's another error, rethrow
+        throw err;
       }
     }
 
