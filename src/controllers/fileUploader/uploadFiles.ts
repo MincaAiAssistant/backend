@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import path from 'path';
 import { PutObjectCommand, PutObjectCommandInput } from '@aws-sdk/client-s3';
 import s3 from '../../db/s3';
+import { File } from '../../models/file';
 
 export const uploadFilesHandler = async (
   req: Request,
@@ -17,6 +17,7 @@ export const uploadFilesHandler = async (
   }
 
   try {
+    const currentTime = new Date();
     const uploadResults = await Promise.all(
       files.map(async (file) => {
         const key = `knowledge-base/user_${userId}/${file.originalname}`;
@@ -29,7 +30,11 @@ export const uploadFilesHandler = async (
         };
 
         await s3.send(new PutObjectCommand(uploadParams));
-        return { filename: file.originalname, key };
+        return {
+          filename: file.originalname,
+          size: file.size,
+          lastModified: currentTime,
+        } as File;
       })
     );
 
