@@ -1,7 +1,9 @@
 import { Request, Response } from 'express';
 import { ListObjectsV2Command } from '@aws-sdk/client-s3';
+import { File } from '../../models/file';
 import dotenv from 'dotenv';
 import s3 from '../../db/s3';
+import path from 'path';
 
 dotenv.config();
 
@@ -20,10 +22,10 @@ export const getAllFiles = async (req: Request, res: Response) => {
 
     const files =
       data.Contents?.map((item) => ({
-        key: item.Key,
+        filename: path.basename(item.Key!),
         lastModified: item.LastModified,
         size: item.Size,
-      })) || [];
+      })) || ([] as File[]);
 
     res.json({ files });
   } catch (error) {
