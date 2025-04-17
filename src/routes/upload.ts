@@ -4,10 +4,13 @@ import {
   PutObjectCommand,
   PutObjectCommandInput,
   ListObjectsV2Command,
+  DeleteObjectCommand,
 } from '@aws-sdk/client-s3';
 import s3 from '../db/s3';
 import path from 'path';
 import dotenv from 'dotenv';
+import { uploadFileHandler } from '../controllers/fileUploader/uploadFiles';
+import { uploadFileMiddleware } from '../middleware/multerMiddleware';
 
 dotenv.config();
 
@@ -17,35 +20,7 @@ const routerUpload = express.Router();
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-// Upload route
-routerUpload.post(
-  '/:userId',
-  upload.single('file'),
-  async (req: any, res: any) => {
-    const file = req.file;
-    const userId = req.params.userId;
-
-    if (!file) return res.status(400).send('No file uploaded');
-
-    const fileExt = path.extname(file.originalname);
-    const key = `uploads/user_${userId}/${Date.now()}_${file.originalname}`;
-
-    const uploadParams: PutObjectCommandInput = {
-      Bucket: process.env.S3_BUCKET_NAME!,
-      Key: key,
-      Body: file.buffer,
-      ContentType: file.mimetype,
-    };
-
-    try {
-      await s3.send(new PutObjectCommand(uploadParams));
-      res.status(200).json({ message: 'Uploaded successfully', key });
-    } catch (err) {
-      console.error('S3 Upload Error:', err);
-      res.status(500).json({ error: 'Upload failed' });
-    }
-  }
-);
+routerUpload.post('/:userId', uploadFileMiddleware, uploadFileHandler);
 
 routerUpload.get('/files/:userId', async (req: Request, res: Response) => {
   const { userId } = req.params;
@@ -73,5 +48,26 @@ routerUpload.get('/files/:userId', async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to list user files' });
   }
 });
+routerUpload.delete(
+  '/files/:userId/:fileName',
+  async (req: Request, res: Response) => {
+    const { userId, fileName } = req.params;
+    const key = `uploads/user_${userId}/${fileName}`;
+
+    try {
+      await s3.send(
+        new DeleteObjectCommand({
+          Bucket: process.env.S3_BUCKET_NAME!,
+          Key: key,
+        })
+      );
+
+      res.json({ message: 'File deleted successfully' });
+    } catch (error) {
+      console.error('S3 Delete Error:', error);
+      res.status(500).json({ error: 'Failed to delete file' });
+    }
+  }
+);
 
 export default routerUpload;
