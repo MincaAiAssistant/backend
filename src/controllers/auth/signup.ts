@@ -51,7 +51,7 @@ export const signUp = async (req: any, res: any) => {
         username: user.username,
       },
       process.env.JWT_SECRET as string,
-      { expiresIn: '1h' }
+      { expiresIn: '1y' }
     );
 
     res.status(201).json({ user, token });

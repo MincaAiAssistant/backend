@@ -46,7 +46,7 @@ export const login = async (req: any, res: any) => {
         username: user.username,
       },
       process.env.JWT_SECRET as string,
-      { expiresIn: '1h' }
+      { expiresIn: '1y' }
     );
 
     // Return response with user and token
