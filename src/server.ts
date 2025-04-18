@@ -1,9 +1,7 @@
 import express from 'express';
 import http from 'http';
 import { limiter } from './utils/rateLimiter';
-import routerAuth from './routes/auth.route';
-import routerChat from './routes/chat.route';
-import routerUpload from './routes/kbase.route';
+import router from './routes';
 import helmet from 'helmet';
 import cors from 'cors';
 
@@ -21,9 +19,5 @@ app.use(
 );
 
 app.use(limiter);
-
 app.use(express.json());
-
-app.use('/auth', routerAuth);
-app.use('/knowledge-base', routerUpload);
-app.use('/chat', routerChat);
+app.use('/', router);

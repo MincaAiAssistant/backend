@@ -1,4 +1,5 @@
 import { sql } from '../../db/postgres';
+import { Chat } from '../../models/chat';
 
 export const updateChat = async (req: any, res: any) => {
   const userid = (req as any).user.userid;
@@ -6,13 +7,13 @@ export const updateChat = async (req: any, res: any) => {
   const { title } = req.body;
 
   try {
-    const chat = await sql`
+    const chat = (await sql`
         UPDATE chats SET
           title = COALESCE(${title}, title),
           updated_at = CURRENT_TIMESTAMP
         WHERE chatid = ${chatid} AND userid = ${userid}
         RETURNING *
-      `;
+      `) as Chat[];
 
     if (chat.length === 0) {
       return res
