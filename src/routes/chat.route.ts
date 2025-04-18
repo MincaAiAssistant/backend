@@ -5,6 +5,7 @@ import { getAllChats } from '../controllers/chat/getAllChats';
 import { deleteChat } from '../controllers/chat/deleteChat';
 import { updateChat } from '../controllers/chat/updateChat';
 import { createMessage } from '../controllers/message/createMessage';
+import { getMessagesByChatId } from '../controllers/message/getAllMessages';
 
 import { authenticateToken } from '../middleware/authMiddleware';
 
@@ -26,5 +27,7 @@ routerChat.post(
   upload.none(),
   createMessage
 );
+
+routerChat.get('/:chatid/message', authenticateToken, getMessagesByChatId);
 
 export default routerChat;
