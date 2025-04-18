@@ -1,15 +1,16 @@
 import { sql } from '../../db/postgres';
 import { Request, Response } from 'express';
+import { Chat } from '../../models/chat';
 
 export const getAllChats = async (req: Request, res: Response) => {
   const userid = (req as any).user.userid;
 
   try {
-    const chats = await sql`
+    const chats = (await sql`
         SELECT * FROM chats
         WHERE userid = ${userid}
         ORDER BY updated_at DESC
-      `;
+      `) as Chat[];
     res.json({ chats });
   } catch (err) {
     console.error('Get Chats Error:', err);

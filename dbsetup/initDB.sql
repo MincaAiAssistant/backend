@@ -14,17 +14,15 @@ CREATE TABLE chats (
   userid UUID REFERENCES users(userid) ON DELETE CASCADE,
   title TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  is_starred BOOLEAN DEFAULT FALSE
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 3. Messages table
 CREATE TABLE messages (
-  messsageid UUID PRIMARY KEY,
+  messageid UUID PRIMARY KEY,
   chatid UUID REFERENCES chats(chatid) ON DELETE CASCADE,
   parent_message_id UUID REFERENCES messages(messsageid) ON DELETE SET NULL,  -- allow null
   role TEXT CHECK (role IN ('user', 'assistant', 'system')),
   content TEXT,
-  tokens INT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
