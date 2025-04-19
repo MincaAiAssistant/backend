@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { sql } from '../../db/postgres';
-import axios from 'axios'; // assuming you're using axios to call external API
+import axios from 'axios';
+require('dotenv').config();
 
 export const createMessage = async (req: Request, res: Response) => {
   const { parent_message_id, question } = req.body;
@@ -17,13 +18,10 @@ export const createMessage = async (req: Request, res: Response) => {
       `;
 
     // 2. Call external assistant API
-    const apiResponse = await axios.post(
-      'https://mincaai-1.app.flowiseai.com/api/v1/prediction/fab685ba-769d-4e9f-b4a5-bf3c04ac546b',
-      {
-        question,
-        chatId: chatid,
-      }
-    );
+    const apiResponse = await axios.post(`${process.env.AI_AGENT_API}`, {
+      question,
+      chatId: chatid,
+    });
 
     const assistantContent =
       apiResponse.data.text || 'Sorry, something went wrong. Please try again.';
