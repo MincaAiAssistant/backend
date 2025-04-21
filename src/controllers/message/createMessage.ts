@@ -5,7 +5,7 @@ import axios from 'axios';
 require('dotenv').config();
 
 export const createMessage = async (req: Request, res: Response) => {
-  const { parent_message_id, question } = req.body;
+  const { parent_message_id, question, uploads } = req.body;
   const chatid = req.params.chatid;
 
   try {
@@ -17,11 +17,26 @@ export const createMessage = async (req: Request, res: Response) => {
         RETURNING *;
       `;
 
-    // 2. Call external assistant API
-    const apiResponse = await axios.post(`${process.env.AI_AGENT_API}`, {
-      question,
-      chatId: chatid,
-    });
+    let apiResponse;
+    if (!uploads) {
+      apiResponse = await axios.post(`${process.env.AI_AGENT_API}`, {
+        question,
+        chatId: chatid,
+      });
+    } else {
+      const transformedData = uploads.map((item: any) => ({
+        name: item.name,
+        mime: item.mimeType,
+        data: item.content,
+        type: 'file:full',
+      }));
+
+      apiResponse = await axios.post(`${process.env.AI_AGENT_API}`, {
+        question,
+        uploads: transformedData,
+        chatId: chatid,
+      });
+    }
 
     const assistantContent =
       apiResponse.data.text || 'Sorry, something went wrong. Please try again.';
