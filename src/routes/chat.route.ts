@@ -6,7 +6,7 @@ import { deleteChat } from '../controllers/chat/deleteChat';
 import { updateChat } from '../controllers/chat/updateChat';
 import { createMessage } from '../controllers/message/createMessage';
 import { getMessagesByChatId } from '../controllers/message/getAllMessages';
-
+import { initChat } from '../controllers/chat/initChat';
 import { authenticateToken } from '../middleware/authMiddleware';
 
 import multer from 'multer';
@@ -20,13 +20,9 @@ routerChat.get('/:chatid', authenticateToken, getChatById);
 routerChat.get('/', authenticateToken, getAllChats);
 routerChat.delete('/:chatid', authenticateToken, deleteChat);
 routerChat.put('/:chatid', authenticateToken, updateChat);
+routerChat.post('/init', authenticateToken, initChat);
 
-routerChat.post(
-  '/:chatid/message',
-  authenticateToken,
-  upload.none(),
-  createMessage
-);
+routerChat.post('/:chatid/message', authenticateToken, createMessage);
 
 routerChat.get('/:chatid/message', authenticateToken, getMessagesByChatId);
 
