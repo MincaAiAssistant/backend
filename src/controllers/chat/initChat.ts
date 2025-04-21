@@ -5,7 +5,7 @@ import { generateChatTitle } from '../../utils/openAI';
 
 export const initChat = async (req: any, res: any) => {
   const userid = (req as any).user.userid;
-  const { question } = req.body;
+  const { question, uploads } = req.body;
 
   if (!userid || !question) {
     return res.status(400).json({ error: 'Missing userid or question' });
@@ -30,11 +30,26 @@ export const initChat = async (req: any, res: any) => {
       RETURNING *;
     `;
 
-    // 3. Call external assistant API
-    const apiResponse = await axios.post(`${process.env.AI_AGENT_API}`, {
-      question,
-      chatId: chatid,
-    });
+    let apiResponse;
+    if (!uploads) {
+      apiResponse = await axios.post(`${process.env.AI_AGENT_API}`, {
+        question,
+        chatId: chatid,
+      });
+    } else {
+      const transformedData = uploads.map((item: any) => ({
+        name: item.name,
+        mime: item.mimeType,
+        data: item.content,
+        type: 'file:full',
+      }));
+
+      apiResponse = await axios.post(`${process.env.AI_AGENT_API}`, {
+        question,
+        uploads: transformedData,
+        chatId: chatid,
+      });
+    }
 
     const assistantContent =
       apiResponse.data?.text ||
