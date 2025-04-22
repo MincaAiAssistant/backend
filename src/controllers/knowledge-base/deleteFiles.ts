@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { deleteAllChunksForFile } from '../helper/deleteChunk';
 import s3 from '../../db/s3';
 
 export const DeleteFilesHandler = async (req: Request, res: Response) => {
@@ -14,6 +15,7 @@ export const DeleteFilesHandler = async (req: Request, res: Response) => {
         Key: key,
       })
     );
+    await deleteAllChunksForFile(userid, fileName, 50);
 
     res.json({ message: 'File deleted successfully' });
   } catch (error) {

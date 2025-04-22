@@ -7,6 +7,7 @@ import {
 import dotenv from 'dotenv';
 import s3 from '../../db/s3';
 import mime from 'mime-types';
+import { renameFileChunks } from '../helper/renameChunk';
 
 dotenv.config();
 
@@ -71,6 +72,7 @@ export const renameFilesHandler = async (req: any, res: any) => {
         Key: newKey,
       })
     );
+    await renameFileChunks(userid, oldFilename, newFilename, 50);
 
     // Delete old file
     await s3.send(new DeleteObjectCommand({ Bucket: bucket, Key: oldKey }));
