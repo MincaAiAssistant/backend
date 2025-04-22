@@ -5,6 +5,7 @@ import { generateChatTitle } from '../../utils/openAI';
 import FormData from 'form-data';
 import { Request, Response } from 'express';
 import multer from 'multer';
+import { transformUploadedFiles } from '../../utils/extractText';
 
 const uploadMiddleware = multer().array('files');
 
@@ -50,34 +51,8 @@ export const initChat = (req: Request, res: Response) => {
           chatId: chatid,
         });
       } else {
-        // 3B. Prepare form-data and upload files
-        const formData = new FormData();
+        const transformedData = await transformUploadedFiles(files);
 
-        files.forEach((file) => {
-          formData.append('files', file.buffer, {
-            filename: file.originalname,
-            contentType: file.mimetype,
-          });
-        });
-
-        const uploadRes = await axios.post(
-          `${process.env.ATTACHMENT_API}`,
-          formData,
-          {
-            headers: {
-              ...formData.getHeaders(),
-            },
-          }
-        );
-
-        const transformedData = uploadRes.data.map((item: any) => ({
-          name: item.name,
-          mime: item.mimeType,
-          data: item.content,
-          type: 'file:full',
-        }));
-
-        // 3C. Ask the assistant with uploaded files
         apiResponse = await axios.post(`${process.env.AI_AGENT_API}`, {
           question,
           uploads: transformedData,

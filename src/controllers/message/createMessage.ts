@@ -5,6 +5,7 @@ import axios from 'axios';
 import multer from 'multer';
 import FormData from 'form-data';
 import dotenv from 'dotenv';
+import { transformUploadedFiles } from '../../utils/extractText';
 
 dotenv.config();
 
@@ -42,32 +43,13 @@ export const createMessage = async (req: Request, res: Response) => {
           chatId: chatid,
         });
       } else {
-        // 2B. Handle file upload using FormData
-        const formData = new FormData();
+        const transformedData = await transformUploadedFiles(files);
 
-        files.forEach((file) => {
-          formData.append('files', file.buffer, {
-            filename: file.originalname,
-            contentType: file.mimetype,
-          });
+        apiResponse = await axios.post(`${process.env.AI_AGENT_API}`, {
+          question,
+          uploads: transformedData,
+          chatId: chatid,
         });
-
-        const uploads = await axios.post(
-          `${process.env.ATTACHMENT_API}`,
-          formData,
-          {
-            headers: {
-              ...formData.getHeaders(),
-            },
-          }
-        );
-
-        const transformedData = uploads.data.map((item: any) => ({
-          name: item.name,
-          mime: item.mimeType,
-          data: item.content,
-          type: 'file:full',
-        }));
 
         apiResponse = await axios.post(`${process.env.AI_AGENT_API}`, {
           question,
