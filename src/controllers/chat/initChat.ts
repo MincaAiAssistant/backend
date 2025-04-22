@@ -1,7 +1,7 @@
 import { sql } from '../../db/postgres';
 import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
-import { generateChatTitle } from '../../utils/openAI';
+import { generateChatDescription, generateAgentName } from '../../utils/openAI';
 import FormData from 'form-data';
 import { Request, Response } from 'express';
 import multer from 'multer';
@@ -24,13 +24,14 @@ export const initChat = (req: Request, res: Response) => {
     }
 
     try {
-      const title = await generateChatTitle(question);
+      const description = await generateChatDescription(question);
+      const agentName = await generateAgentName(question);
       const chatid = uuidv4();
 
       // 1. Create chat
       const chatResult = await sql`
-        INSERT INTO chats (chatid, userid, title)
-        VALUES (${chatid}, ${userid}, ${title})
+        INSERT INTO chats (chatid, userid, title, description)
+        VALUES (${chatid}, ${userid}, ${agentName}, ${description})
         RETURNING *;
       `;
 
