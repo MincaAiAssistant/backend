@@ -4,4 +4,5 @@ export interface Chat {
   title?: string | null;
   created_at?: string; // ISO timestamp string
   updated_at?: string; // ISO timestamp string
+  description?: string | null;
 }
