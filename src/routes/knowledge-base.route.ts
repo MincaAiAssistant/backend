@@ -1,12 +1,12 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import { uploadFilesHandler } from '../controllers/fileUploader/uploadFiles';
+import { uploadFilesHandler } from '../controllers/knowledge-base/uploadFiles';
 import { uploadFilesMiddleware } from '../middleware/multerMiddleware';
-import { getAllFiles } from '../controllers/fileUploader/getAllFiles';
-import { DeleteFilesHandler } from '../controllers/fileUploader/deleteFiles';
+import { getAllFiles } from '../controllers/knowledge-base/getAllFiles';
+import { DeleteFilesHandler } from '../controllers/knowledge-base/deleteFiles';
 import { authenticateToken } from '../middleware/authMiddleware';
-import { DownloadFilesHandler } from '../controllers/fileUploader/downloadFiles';
-import { renameFilesHandler } from '../controllers/fileUploader/renameFiles';
+import { DownloadFilesHandler } from '../controllers/knowledge-base/downloadFiles';
+import { renameFilesHandler } from '../controllers/knowledge-base/renameFiles';
 
 dotenv.config();
 
