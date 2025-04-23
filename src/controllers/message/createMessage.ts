@@ -3,7 +3,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { sql } from '../../db/postgres';
 import axios from 'axios';
 import multer from 'multer';
-import FormData from 'form-data';
 import dotenv from 'dotenv';
 import { transformUploadedFiles } from '../../utils/extractText';
 
@@ -26,39 +25,37 @@ export const createMessage = async (req: Request, res: Response) => {
     }
 
     try {
-      // 1. Insert user message
+      let transformedData: any[] = [];
+      let attachmentsMeta: any[] = [];
+
+      if (files.length > 0) {
+        transformedData = await transformUploadedFiles(files);
+        attachmentsMeta = await transformUploadedFiles(files, true);
+      }
+
+      // 1. Insert user message (with attachments metadata if any)
       const userMessageId = uuidv4();
       const userMessage = await sql`
-        INSERT INTO messages (messageid, chatid, parent_message_id, role, content)
-        VALUES (${userMessageId}, ${chatid}, ${parent_message_id || null}, 'user', ${question})
+        INSERT INTO messages (messageid, chatid, parent_message_id, role, content, attachments)
+        VALUES (
+          ${userMessageId},
+          ${chatid},
+          ${parent_message_id || null},
+          'user',
+          ${question},
+          ${JSON.stringify(attachmentsMeta)}
+        )
         RETURNING *;
       `;
 
-      let apiResponse;
+      // 2. Send to assistant
+      const apiResponse = await axios.post(`${process.env.AI_AGENT_API}`, {
+        question,
+        chatId: chatid,
+        ...(transformedData.length > 0 && { uploads: transformedData }),
+      });
 
-      if (files.length === 0) {
-        // 2A. No attachments – simple API call
-        apiResponse = await axios.post(`${process.env.AI_AGENT_API}`, {
-          question,
-          chatId: chatid,
-        });
-      } else {
-        const transformedData = await transformUploadedFiles(files);
-
-        apiResponse = await axios.post(`${process.env.AI_AGENT_API}`, {
-          question,
-          uploads: transformedData,
-          chatId: chatid,
-        });
-
-        apiResponse = await axios.post(`${process.env.AI_AGENT_API}`, {
-          question,
-          uploads: transformedData,
-          chatId: chatid,
-        });
-      }
-
-      // 3. Get assistant's response
+      // 3. Get assistant response
       const assistantContent =
         apiResponse.data?.text ||
         'Sorry, something went wrong. Please try again.';
@@ -71,10 +68,11 @@ export const createMessage = async (req: Request, res: Response) => {
         RETURNING *;
       `;
 
-      // 5. Respond with both messages
+      // 5. Respond with both messages and attachments
       return res.status(201).json({
         user: userMessage[0],
         assistant: assistantMessage[0],
+        attachments: attachmentsMeta,
       });
     } catch (err) {
       console.error('Create message error:', err);

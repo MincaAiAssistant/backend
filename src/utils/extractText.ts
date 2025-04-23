@@ -1,6 +1,10 @@
 import axios from 'axios';
+import { v4 as uuidv4 } from 'uuid';
 
-export const transformUploadedFiles = async (files: Express.Multer.File[]) => {
+export const transformUploadedFiles = async (
+  files: Express.Multer.File[],
+  returnMetaOnly: boolean = false // toggle if you want metadata only
+) => {
   const FormData = (await import('form-data')).default;
   const formData = new FormData();
 
@@ -21,12 +25,27 @@ export const transformUploadedFiles = async (files: Express.Multer.File[]) => {
     }
   );
 
-  const transformedData = uploadRes.data.map((item: any) => ({
-    name: item.name,
-    mime: item.mimeType,
-    data: item.content,
-    type: 'file:full',
-  }));
+  // Assume uploadRes.data returns something like:
+  // [{ name, mimeType, content, id, size }, ...]
+
+  const transformedData = uploadRes.data.map((item: any) => {
+    if (returnMetaOnly) {
+      return {
+        name: item.name,
+        mime: item.mimeType,
+        size: item.size,
+        id: 'file_' + uuidv4(),
+        type: 'file:meta',
+      };
+    } else {
+      return {
+        name: item.name,
+        mime: item.mimeType,
+        data: item.content,
+        type: 'file:full',
+      };
+    }
+  });
 
   return transformedData;
 };
