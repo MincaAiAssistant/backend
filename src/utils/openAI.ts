@@ -8,9 +8,7 @@ const openai = new OpenAI({
 export async function generateChatDescription(
   firstMessage: string
 ): Promise<string> {
-  const prompt = `You are an insurance expert specialized in Home and SME Property products at AXA. 
-    Based only on the AXA tool (Hogar Protegido document), generate a short and descriptive title (6-15 words) summarizing the following message:\n\n"${firstMessage}"\n\nOnly return the title.`;
-
+  const prompt = `You are an insurance expert specialized in insurance. Generate a short and descriptive title (6-15 words) summarizing the following message:\n\n"${firstMessage}"\n\nOnly return the title.`;
   try {
     const response = await openai.chat.completions.create({
       model: 'gpt-4',
@@ -18,7 +16,7 @@ export async function generateChatDescription(
         {
           role: 'system',
           content:
-            'You are a helpful assistant that generates concise and informative titles for user messages.',
+            'You are a helpful assistant that generates concise and informative description for user messages.',
         },
         {
           role: 'user',
@@ -39,8 +37,7 @@ export async function generateChatDescription(
 }
 
 export async function generateAgentName(firstMessage: string): Promise<string> {
-  const prompt = `You are an insurance expert specialized in Home and SME Property products at AXA. 
-  Based only on the AXA tool (Hogar Protegido document), generate a duties name (2-3 words) for the AXA agent that would be replying to the following message:\n\n"${firstMessage}"\n\nOnly return the agent with their duties (e.g."Customer Care Agent", "Analysis Agent").`;
+  const prompt = `You are an insurance expert specialized in insurance, generate a duties name (2-3 words) for the AXA agent that would be replying to the following message:\n\n"${firstMessage}"\n\nOnly return the agent with their duties (e.g."Customer Care Agent", "Analysis Agent").`;
 
   try {
     const response = await openai.chat.completions.create({
@@ -49,7 +46,7 @@ export async function generateAgentName(firstMessage: string): Promise<string> {
         {
           role: 'system',
           content:
-            'You are a helpful assistant that creates realistic names of AXA insurance agents.',
+            'You are a helpful assistant that creates realistic names of insurance agents.',
         },
         {
           role: 'user',
