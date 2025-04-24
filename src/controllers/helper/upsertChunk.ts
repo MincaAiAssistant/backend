@@ -3,7 +3,7 @@ import { pc_index, openai } from '../../db/pinecone';
 // === 1. Token-safe splitter ===
 const chunkTextIntoSegments = (
   text: string,
-  maxTokens: number = 8000
+  maxTokens: number = 1000
 ): string[] => {
   const sentences = text.match(/[^\.!\?]+[\.!\?]+/g) || [text]; // Basic sentence splitting
   const chunks: string[] = [];
@@ -44,7 +44,7 @@ export const upsertChunk = async (
   userid: string,
   chunkIndex: number
 ) => {
-  const chunks = chunkTextIntoSegments(chunkText, 4000);
+  const chunks = chunkTextIntoSegments(chunkText, 1000);
 
   for (let i = 0; i < chunks.length; i++) {
     const text = chunks[i];

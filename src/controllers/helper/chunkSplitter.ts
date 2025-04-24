@@ -1,6 +1,6 @@
 export const chunkTextIntoSegments = (
   text: string,
-  maxTokens: number = 8000
+  maxTokens: number = 1000
 ): string[] => {
   const sentences = text.match(/[^\.!\?]+[\.!\?]+/g) || [text]; // Basic sentence splitting
   const chunks: string[] = [];
