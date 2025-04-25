@@ -52,17 +52,17 @@ This is the backend service for MincaAI - MVP version. It provides RESTful APIs 
 
 Create a .env file with the following variables:
 
-- PORT=3000
-- DATABASE_URL=postgresql://<username>:<password>@<host>:<port>/<database>?sslmode=require
+- PORT=
+- DATABASE_URL=
 - JWT_SECRET=<your-jwt-secret>
 - AWS_ACCESS_KEY_ID=<your-aws-access-key-id>
 - AWS_SECRET_ACCESS_KEY=<your-aws-secret-access-key>
-- AWS_REGION=ap-southeast-2
+- AWS_REGION=
 - S3_BUCKET_NAME=<your-s3-bucket-name>
 - CORS_ORIGINS=<your-cors-list>
-- AI_AGENT_API=https://<your-ai-agent-api-url>
+- AI_AGENT_API=<your-ai-agent-api-url>
 - OPENAI_API_KEY=<your-openai-api-key>
-- ATTACHMENT_API=https://<your-attachment-api-url>
+- ATTACHMENT_API=<your-attachment-api-url>
 - PINECONE_API_KEY=<your-pinecone-api-key>
 - INDEX_NAME=<your-index-name>
-- INDEX_HOST=https://<your-index-host>
+- INDEX_HOST=<your-index-host>
