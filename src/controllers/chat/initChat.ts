@@ -16,6 +16,7 @@ export const initChat = (req: Request, res: Response) => {
 
     const userid = (req as any).user?.userid;
     const { question } = req.body;
+    const { type } = req.query;
     const files = (req.files as Express.Multer.File[]) || [];
 
     if (!userid || !question) {
@@ -29,8 +30,8 @@ export const initChat = (req: Request, res: Response) => {
 
       // 1. Create chat
       const chatResult = await sql`
-        INSERT INTO chats (chatid, userid, title, description)
-        VALUES (${chatid}, ${userid}, ${agentName}, ${description})
+        INSERT INTO chats (type,chatid, userid, title, description)
+        VALUES (${type},${chatid}, ${userid}, ${agentName}, ${description})
         RETURNING *;
       `;
 
