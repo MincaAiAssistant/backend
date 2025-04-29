@@ -1,8 +1,7 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { sql } from '../../db/postgres';
-import { User } from '../../models/user';
-import { Request, Response } from 'express';
+import { sql } from '../../../db/postgres';
+import { User } from '../../../models/user';
 
 /**
  * Function to authenticate a user and return a JWT token.
