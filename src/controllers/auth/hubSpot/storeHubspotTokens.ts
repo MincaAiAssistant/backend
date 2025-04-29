@@ -9,15 +9,15 @@ export const storeHubspotTokens = async (req: any, res: any) => {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    const access_token_expires_at = new Date(Date.now() + expires_in * 1000);
+    const expires_at = new Date(Date.now() + expires_in * 1000);
 
     await sql`
-          INSERT INTO hubspot_tokens (userid, access_token, refresh_token, access_token_expires_at)
-  VALUES (${userId}, ${access_token}, ${refresh_token}, ${access_token_expires_at})
+          INSERT INTO hubspot_tokens (userid, access_token, refresh_token, expires_at)
+  VALUES (${userId}, ${access_token}, ${refresh_token}, ${expires_at})
   ON CONFLICT (userid) DO UPDATE SET
     access_token = EXCLUDED.access_token,
     refresh_token = EXCLUDED.refresh_token,
-    access_token_expires_at = EXCLUDED.access_token_expires_at  RETURNING *;
+    expires_at = EXCLUDED.expires_at  RETURNING *;
         `;
 
     res.status(200).json({ message: 'Token stored or updated successfully' });
