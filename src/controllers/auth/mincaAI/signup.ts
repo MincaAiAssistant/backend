@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { sql } from '../../db/postgres';
-import { User } from '../../models/user';
+import { sql } from '../../../db/postgres';
+import { User } from '../../../models/user';
 
 /**
  * Function to create a new user with hashed password and return a token.
