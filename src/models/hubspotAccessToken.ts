@@ -1,4 +1,4 @@
-export interface hubspotAccessToken {
+export interface HubspotAccessToken {
   access_token: string;
   refresh_token: string;
   expires_in: number;
