@@ -18,17 +18,17 @@ export const hubspotCallback = async (req: any, res: any) => {
 
   try {
     // Exchange code for tokens
-    const response = await axios.post(
-      HUBSPOT_TOKEN_URL,
-      new URLSearchParams({
-        grant_type: 'authorization_code',
-        client_id: HUBSPOT_CLIENT_ID,
-        clientsecret: HUBSPOT_CLIENT_SECRET,
-        redirect_uri: REDIRECT_URI,
-        code: code,
-      }),
-      { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
-    );
+    const params = new URLSearchParams({
+      grant_type: 'authorization_code',
+      client_id: HUBSPOT_CLIENT_ID,
+      client_secret: HUBSPOT_CLIENT_SECRET,
+      redirect_uri: REDIRECT_URI,
+      code: code,
+    });
+
+    const response = await axios.post(HUBSPOT_TOKEN_URL, params, {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    });
 
     const { access_token, refresh_token, expires_in } = response.data;
     const access_token_expires_at = new Date(Date.now() + expires_in * 1000);
@@ -39,16 +39,15 @@ export const hubspotCallback = async (req: any, res: any) => {
 
     await sql`
       INSERT INTO hubspot_tokens (
-        user_id, access_token, refresh_token, expires_at, updated_at
+        userid, access_token, refresh_token, expires_at
       )
       VALUES (
-        ${userId}, ${access_token}, ${refresh_token}, ${access_token_expires_at}, ${new Date()}
+        ${userId}, ${access_token}, ${refresh_token}, ${access_token_expires_at}
       )
-      ON CONFLICT (user_id) DO UPDATE SET
+      ON CONFLICT (userid) DO UPDATE SET
         access_token = EXCLUDED.access_token,
         refresh_token = EXCLUDED.refresh_token,
-        expires_at = EXCLUDED.expires_at,
-        updated_at = EXCLUDED.updated_at
+        expires_at = EXCLUDED.expires_at
     `;
 
     return res.status(200).send('HubSpot tokens saved successfully');
