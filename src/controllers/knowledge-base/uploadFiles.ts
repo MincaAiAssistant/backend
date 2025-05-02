@@ -12,6 +12,7 @@ export const uploadFilesHandler = async (
 ): Promise<void> => {
   const files = req.files as Express.Multer.File[];
   const userId = (req as any).user.userid;
+  const { collection } = req.query;
 
   if (!files || files.length === 0) {
     res.status(400).send('No files uploaded');
@@ -24,7 +25,7 @@ export const uploadFilesHandler = async (
 
     const uploadResults = await Promise.all(
       files.map(async (file, index) => {
-        const key = `knowledge-base/user_${userId}/${file.originalname}`;
+        const key = `knowledge-base/user_${userId}/${collection}/${file.originalname}`;
 
         const uploadParams: PutObjectCommandInput = {
           Bucket: process.env.S3_BUCKET_NAME!,
