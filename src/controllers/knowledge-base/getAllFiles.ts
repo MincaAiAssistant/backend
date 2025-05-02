@@ -8,28 +8,44 @@ import path from 'path';
 dotenv.config();
 
 export const getAllFiles = async (req: Request, res: Response) => {
-  const userid = (req as any).user.userid;
-  const bucket = process.env.S3_BUCKET_NAME!;
-  const prefix = `knowledge-base/user_${userid}/`;
+  const userId = (req as any).user.userid;
 
   try {
+    const prefix = `knowledge-base/user_${userId}/`;
     const command = new ListObjectsV2Command({
-      Bucket: bucket,
+      Bucket: process.env.S3_BUCKET_NAME!,
       Prefix: prefix,
     });
 
-    const data = await s3.send(command);
+    const result = await s3.send(command);
+    const files = result.Contents || [];
 
-    const files =
-      data.Contents?.map((item) => ({
-        filename: path.basename(item.Key!),
-        lastModified: item.LastModified,
-        size: item.Size,
-      })) || ([] as File[]);
+    const collections: Record<string, string[]> = {};
 
-    res.json({ files });
-  } catch (error) {
-    console.error('S3 List Error:', error);
-    res.status(500).json({ error: 'Failed to list user files' });
+    for (const file of files) {
+      const key = file.Key!;
+      const pathParts = key.split('/');
+      if (pathParts.length < 4) continue;
+
+      const collectionName = pathParts[2]; // user_<id>/<collection>/<filename>
+      const filename = pathParts.slice(3).join('/');
+
+      if (!collections[collectionName]) {
+        collections[collectionName] = [];
+      }
+      collections[collectionName].push(filename);
+    }
+
+    const response = Object.entries(collections).map(
+      ([collection, fileList]) => ({
+        collection,
+        files: fileList,
+      })
+    );
+
+    res.status(200).json(response);
+  } catch (err) {
+    console.error('S3 List Error:', err);
+    res.status(500).json({ error: 'Could not fetch files' });
   }
 };

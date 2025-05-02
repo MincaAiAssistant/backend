@@ -10,7 +10,11 @@ dotenv.config();
 
 const uploadMiddleware = multer().array('files'); // Multer to handle file uploads
 
-export const createMessage = async (req: Request, res: Response) => {
+export const createMessage = async (req: any, res: any) => {
+  const { type } = req.query;
+  if (!type) {
+    return res.status(400).json({ error: 'Type is required' });
+  }
   uploadMiddleware(req, res, async (uploadErr: any) => {
     if (uploadErr) {
       return res.status(400).json({ error: 'File upload error' });
