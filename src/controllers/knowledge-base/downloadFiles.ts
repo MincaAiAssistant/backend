@@ -6,7 +6,8 @@ import s3 from '../../db/s3';
 export const DownloadFilesHandler = async (req: Request, res: Response) => {
   const userid = (req as any).user.userid;
   const { fileName } = req.params;
-  const key = `knowledge-base/user_${userid}/${fileName}`;
+  const { collection } = req.query;
+  const key = `knowledge-base/user_${userid}/${collection}/${fileName}`;
 
   try {
     const command = new GetObjectCommand({
