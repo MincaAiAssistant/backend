@@ -58,7 +58,6 @@ export const uploadFilesHandler = async (
 
     res.status(200).json({
       message: 'Files uploaded successfully',
-      files: uploadResults,
     });
   } catch (err) {
     console.error('S3 Upload Error:', err);

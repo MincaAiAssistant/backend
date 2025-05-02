@@ -20,28 +20,34 @@ export const getAllFiles = async (req: Request, res: Response) => {
     const result = await s3.send(command);
     const files = result.Contents || [];
 
-    const collections: Record<string, string[]> = {};
+    const collections: Record<
+      string,
+      Array<{ filename: string; size: number; lastModified: Date }>
+    > = {};
 
     for (const file of files) {
       const key = file.Key!;
       const pathParts = key.split('/');
       if (pathParts.length < 4) continue;
 
-      const collectionName = pathParts[2]; // user_<id>/<collection>/<filename>
+      const collectionName = pathParts[2]; // knowledge-base/user_<id>/<collection>/<filename>
       const filename = pathParts.slice(3).join('/');
 
       if (!collections[collectionName]) {
         collections[collectionName] = [];
       }
-      collections[collectionName].push(filename);
+
+      collections[collectionName].push({
+        filename,
+        size: file.Size || 0,
+        lastModified: file.LastModified || new Date(0),
+      });
     }
 
-    const response = Object.entries(collections).map(
-      ([collection, fileList]) => ({
-        collection,
-        files: fileList,
-      })
-    );
+    const response = Object.entries(collections).map(([collection, files]) => ({
+      collection,
+      files,
+    }));
 
     res.status(200).json(response);
   } catch (err) {
