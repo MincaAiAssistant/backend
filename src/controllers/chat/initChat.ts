@@ -30,7 +30,7 @@ export const initChat = (req: Request, res: Response) => {
       const aiAgentAPI =
         chatType === 'sales'
           ? process.env.AI_AGENT_API_SALES
-          : process.env.AI_AGENT_API;
+          : process.env.AI_AGENT_API_POLICY;
 
       const chatid = uuidv4();
       const title = await generateAgentName(question);

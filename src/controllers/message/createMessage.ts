@@ -30,7 +30,7 @@ export const createMessage = async (req: Request, res: Response) => {
         SELECT type FROM public.chats WHERE chatid = ${chatid}
       `;
 
-      let aiAgentAPI = process.env.AI_AGENT_API;
+      let aiAgentAPI = process.env.AI_AGENT_API_POLICY;
       if (chatType === 'sales') {
         aiAgentAPI = process.env.AI_AGENT_API_SALES;
       }
