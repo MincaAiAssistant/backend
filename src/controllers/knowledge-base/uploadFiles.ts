@@ -12,7 +12,7 @@ export const uploadFilesHandler = async (
 ): Promise<void> => {
   const files = req.files as Express.Multer.File[];
   const userId = (req as any).user.userid;
-  const { collection } = req.query;
+  const { collection } = req.params;
 
   if (!files || files.length === 0) {
     res.status(400).send('No files uploaded');
