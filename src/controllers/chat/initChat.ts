@@ -1,11 +1,13 @@
-import { sql } from '../../db/postgres';
-import { v4 as uuidv4 } from 'uuid';
-import axios from 'axios';
-import { generateChatDescription, generateAgentName } from '../../utils/openAI';
 import { Request, Response } from 'express';
 import multer from 'multer';
+import { v4 as uuidv4 } from 'uuid';
+import axios from 'axios';
+
+import { sql } from '../../db/postgres';
+import { generateChatDescription, generateAgentName } from '../../utils/openAI';
 import { transformUploadedFiles } from '../../utils/extractText';
 
+// Middleware to handle multiple file uploads
 const uploadMiddleware = multer().array('files');
 
 export const initChat = (req: Request, res: Response) => {
@@ -16,7 +18,7 @@ export const initChat = (req: Request, res: Response) => {
 
     const userid = (req as any).user?.userid;
     const { question } = req.body;
-    const { type } = req.query;
+    const chatType = req.query.type as string;
     const files = (req.files as Express.Multer.File[]) || [];
 
     if (!userid || !question) {
@@ -24,60 +26,58 @@ export const initChat = (req: Request, res: Response) => {
     }
 
     try {
-      const description = await generateChatDescription(question);
-      const agentName = await generateAgentName(question);
-      const chatid = uuidv4();
+      // Select appropriate agent endpoint based on chat type
+      const aiAgentAPI =
+        chatType === 'sales'
+          ? process.env.AI_AGENT_API_SALES
+          : process.env.AI_AGENT_API_POLICY;
 
-      // 1. Create chat
-      const chatResult = await sql`
-        INSERT INTO chats (type,chatid, userid, title, description)
-        VALUES (${type},${chatid}, ${userid}, ${agentName}, ${description})
+      const chatid = uuidv4();
+      const title = await generateAgentName(question);
+      const description = await generateChatDescription(question);
+
+      // 1. Create a new chat
+      const [chat] = await sql`
+        INSERT INTO chats (type, chatid, userid, title, description)
+        VALUES (${chatType}, ${chatid}, ${userid}, ${title}, ${description})
         RETURNING *;
       `;
 
-      // 2. Process attachments if any
+      // 2. Process file attachments (if any)
       const attachmentsMeta =
         files.length > 0 ? await transformUploadedFiles(files, true) : [];
 
-      // 3. Insert user message (with attachments if present)
+      // 3. Store user's initial message
       const userMessageId = uuidv4();
-      const userMessage = await sql`
+      const [userMessage] = await sql`
         INSERT INTO messages (messageid, chatid, parent_message_id, role, content, attachments)
         VALUES (
-            ${userMessageId},
-            ${chatid},
-            NULL,
-            'user',
-            ${question},
-            ${JSON.stringify(attachmentsMeta)}
+          ${userMessageId},
+          ${chatid},
+          NULL,
+          'user',
+          ${question},
+          ${JSON.stringify(attachmentsMeta)}
         )
         RETURNING *;
-        `;
+      `;
 
-      // 4. Prepare and send API request
-      let apiResponse;
+      // 4. Prepare payload and call AI agent
+      const payload: any = { question, chatId: chatid };
       if (files.length > 0) {
-        const transformedData = await transformUploadedFiles(files);
-        apiResponse = await axios.post(`${process.env.AI_AGENT_API}`, {
-          question,
-          uploads: transformedData,
-          chatId: chatid,
-        });
-      } else {
-        apiResponse = await axios.post(`${process.env.AI_AGENT_API}`, {
-          question,
-          chatId: chatid,
-        });
+        payload.uploads = await transformUploadedFiles(files);
       }
 
-      // 5. Get assistant response
+      const apiResponse = await axios.post(aiAgentAPI || '', payload);
+
+      // 5. Extract assistant response
       const assistantContent =
         apiResponse.data?.text ||
         'Sorry, something went wrong. Please try again.';
 
-      // 6. Insert assistant message (no attachments)
+      // 6. Save assistant's message
       const assistantMessageId = uuidv4();
-      const assistantMessage = await sql`
+      const [assistantMessage] = await sql`
         INSERT INTO messages (messageid, chatid, parent_message_id, role, content)
         VALUES (
           ${assistantMessageId},
@@ -89,11 +89,11 @@ export const initChat = (req: Request, res: Response) => {
         RETURNING *;
       `;
 
-      // 7. Respond
+      // 7. Return final response
       return res.status(201).json({
-        chat: chatResult[0],
-        user: userMessage[0],
-        assistant: assistantMessage[0],
+        chat,
+        user: userMessage,
+        assistant: assistantMessage,
         attachments: attachmentsMeta,
       });
     } catch (err) {
