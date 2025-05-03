@@ -6,7 +6,7 @@ import s3 from '../../db/s3';
 export const DeleteFilesHandler = async (req: Request, res: Response) => {
   const { fileName } = req.params;
   const userid = (req as any).user.userid;
-  const { collection } = req.query;
+  const { collection } = req.params;
   const key = `knowledge-base/user_${userid}/${collection}/${fileName}`;
 
   try {

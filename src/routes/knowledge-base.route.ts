@@ -13,16 +13,20 @@ dotenv.config();
 const routerUpload = express.Router();
 
 routerUpload.post(
-  '/files',
+  '/collection/:collection/files',
   uploadFilesMiddleware,
   authenticateToken,
   uploadFilesHandler
 );
 routerUpload.post('/files/rename', authenticateToken, renameFilesHandler);
 routerUpload.get('/files', authenticateToken, getAllFiles);
-routerUpload.delete('/files/:fileName', authenticateToken, DeleteFilesHandler);
+routerUpload.delete(
+  '/collection/:collection/files/:fileName',
+  authenticateToken,
+  DeleteFilesHandler
+);
 routerUpload.get(
-  '/files/:fileName/download',
+  '/collection/:collection/files/:fileName/download',
   authenticateToken,
   DownloadFilesHandler
 );
