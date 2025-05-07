@@ -10,7 +10,7 @@ const REDIRECT_URI = process.env.REDIRECT_URI || '';
 
 export const hubspotCallback = async (req: any, res: any) => {
   const code = req.query.code as string;
-  const userId = (req as any).user.userid;
+  const userId = req.query.state as string;
 
   if (!code) {
     return res.status(400).send('Missing authorization code');
