@@ -1,5 +1,5 @@
-import { sql } from '../../../db/postgres';
-import { HubspotAccessToken } from '../../../models/hubspotAccessToken';
+import { sql } from '../../db/postgres';
+import { HubspotAccessToken } from '../../models/hubspotAccessToken';
 import axios from 'axios';
 
 const HUBSPOT_CLIENT_ID = process.env.HUBSPOT_CLIENT_ID;
@@ -14,7 +14,7 @@ export async function getValidAccessToken(userId: string): Promise<string> {
   `) as HubspotAccessToken[];
   const tokenRecord = tokens[0];
   if (!tokenRecord) {
-    throw new Error('HubSpot tokens not found for user');
+    return '';
   }
 
   const now = new Date();
