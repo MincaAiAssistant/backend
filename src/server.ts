@@ -7,6 +7,8 @@ import cors from 'cors';
 export const app = express();
 export const server = http.createServer(app);
 
+app.use(express.static('public'));
+
 app.use(helmet());
 
 const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || [];
