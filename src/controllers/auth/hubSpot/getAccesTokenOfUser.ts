@@ -13,7 +13,7 @@ export const getAccessTokenOfUser = async (req: any, res: any) => {
       return res.status(404).json({ error: 'No valid access token found' });
     }
 
-    return res.status(200).json({ access_token: accessToken });
+    return res.status(200).json({ hubspot_access_token: accessToken });
   } catch (error) {
     console.error('Error fetching HubSpot access token:', error);
     return res
