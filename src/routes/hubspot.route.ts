@@ -7,7 +7,7 @@ import { getAccessTokenOfUser } from '../controllers/auth/hubSpot/getAccesTokenO
 const routerHubspot = express.Router();
 
 routerHubspot.post('/store-tokens', authenticateToken, storeHubspotTokens);
-routerHubspot.post('/callback', authenticateToken, hubspotCallback);
+routerHubspot.get('/callback', authenticateToken, hubspotCallback);
 routerHubspot.get('/access-token', authenticateToken, getAccessTokenOfUser);
 
 export default routerHubspot;
