@@ -10,32 +10,31 @@ const REDIRECT_URI = process.env.REDIRECT_URI || '';
 
 export const hubspotCallback = async (req: any, res: any) => {
   const code = req.query.code as string;
-  const userId = req.query.state as string;
+  const userId = req.query.state as string; // Used to pass user ID securely
 
   if (!code) {
     return res.status(400).send('Missing authorization code');
   }
 
+  if (!userId) {
+    return res.status(401).send('Missing state (user ID)');
+  }
+
   try {
-    // Exchange code for tokens
     const params = new URLSearchParams({
       grant_type: 'authorization_code',
       client_id: HUBSPOT_CLIENT_ID,
       client_secret: HUBSPOT_CLIENT_SECRET,
       redirect_uri: REDIRECT_URI,
-      code: code,
+      code,
     });
 
-    const response = await axios.post(HUBSPOT_TOKEN_URL, params, {
+    const response = await axios.post(HUBSPOT_TOKEN_URL, params.toString(), {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     });
 
     const { access_token, refresh_token, expires_in } = response.data;
     const access_token_expires_at = new Date(Date.now() + expires_in * 1000);
-
-    if (!userId) {
-      return res.status(401).send('User not authenticated');
-    }
 
     await sql`
       INSERT INTO hubspot_tokens (
@@ -50,12 +49,34 @@ export const hubspotCallback = async (req: any, res: any) => {
         expires_at = EXCLUDED.expires_at
     `;
 
-    return res.status(200).json({ hubspot_access_token: access_token });
+    // If called via popup, send postMessage + close window
+    return res.send(`
+      <html>
+        <body>
+          <script>
+            window.opener.postMessage({ status: "success", access_token: "${access_token}" }, "*");
+            window.close();
+          </script>
+          <p>HubSpot connected. You can close this window.</p>
+        </body>
+      </html>
+    `);
   } catch (error: any) {
     console.error(
       'Error exchanging HubSpot code:',
       error.response?.data || error.message
     );
-    return res.status(500).send('Failed to login with HubSpot');
+
+    return res.send(`
+      <html>
+        <body>
+          <script>
+            window.opener.postMessage({ status: "error", message: "HubSpot connection failed" }, "*");
+            window.close();
+          </script>
+          <p>Failed to connect to HubSpot. You can close this window.</p>
+        </body>
+      </html>
+    `);
   }
 };
