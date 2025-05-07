@@ -1,57 +1,48 @@
-import { OpenAI } from 'openai';
-import { Pinecone } from '@pinecone-database/pinecone';
-import { v4 as uuidv4 } from 'uuid';
+const { MongoClient } = require('mongodb');
 
-// === CONFIG ===
-const openai = new OpenAI({
-  apiKey:
-    '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',
-});
-const pinecone = new Pinecone({
-  apiKey:
-    'pcsk_3NyaRB_MG8hzgcPD18LeoXzcctEkLYcte5CfHEeaoZiHaARzVgANDhinTAvEXUbkaND3jv',
-});
-const index = pinecone.Index('mincaai');
+const uri = `mongodb+srv://mincaai:baekdqNvwD20wGYE@cluster0.u30sb.mongodb.net`;
+const client = new MongoClient(uri);
 
-const NAMESPACE = 'org_42';
+async function findRelatedStock(inputRaw) {
+  console.log('Fetching related stock info...');
 
-// === 1. Define your input text ===
-const chunkText = 'This is the chunk text...';
+  try {
+    const input = inputRaw.toUpperCase();
+    const name = input.replace(/\s*\(.*?\)\s*/g, '').trim();
+    const match = input.match(/\((.*?)\)/);
+    const univers = match ? match[1] : '';
 
-// === 2. Generate embedding from OpenAI ===
-const getEmbedding = async (text) => {
-  const response = await openai.embeddings.create({
-    model: 'text-embedding-ada-002',
-    input: text,
-  });
+    await client.connect();
+    const db = client.db('Vixis');
+    const collection = db.collection('stock');
 
-  return response.data[0].embedding;
-};
+    // Step 1: Find the most related name
+    const relatedNameDocs = await collection
+      .find({ NAME: { $regex: name, $options: 'i' } })
+      .sort({ SCORING: -1 })
+      .limit(1)
+      .toArray();
 
-// === 3. Upsert chunk to Pinecone ===
-const upsertChunk = async () => {
-  const embeddingVector = await getEmbedding(chunkText);
-  const chunkId = uuidv4();
+    const relatedName =
+      relatedNameDocs.length > 0 ? relatedNameDocs[0].NAME : name;
 
-  const metadata = {
-    org_id: 'org_42',
-    document_id: 'doc_001',
-    document_name: 'manual.pdf',
-    uploaded_by: 'user_007',
-    chunk_index: 0,
-    text: chunkText,
-    created_at: new Date().toISOString(),
-  };
+    // Step 2: Find the most related univers using the found name
+    const query = { NAME: relatedName };
+    if (univers) {
+      query.UNIVERS = { $regex: univers, $options: 'i' };
+    }
 
-  const vector = {
-    id: chunkId,
-    values: embeddingVector,
-    metadata: metadata,
-  };
+    const relatedUniversDoc = await collection.findOne(query);
 
-  // Uncomment to perform the upsert operation
-  // await index.upsert([vector]);
-  console.log('✅ Chunk upserted successfully to Pinecone!');
-};
+    return relatedUniversDoc || { message: 'No matching document found.' };
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    return { error: error.message };
+  } finally {
+    await client.close();
+  }
+}
 
-upsertChunk().catch(console.error);
+// Example usage
+const inputString = 'TESLA (EV)';
+findRelatedStock(inputString).then(console.log);
