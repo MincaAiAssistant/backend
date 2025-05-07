@@ -49,33 +49,46 @@ export const hubspotCallback = async (req: any, res: any) => {
         expires_at = EXCLUDED.expires_at
     `;
 
+    const nonce = Math.random().toString(36).substr(2, 10); // Generate a random nonce
+
+    // Send the nonce in the response and add it to the CSP header
+    res.setHeader(
+      'Content-Security-Policy',
+      `script-src 'self' 'nonce-${nonce}'`
+    );
+
+    // Return the HTML with the nonce applied to the script
     return res.send(`
+      <!DOCTYPE html>
       <html>
+        <head>
+          <title>HubSpot Auth</title>
+        </head>
         <body>
-          <script>
-            window.opener.postMessage({
-              status: "success",
-              access_token: "${access_token}"
-            }, "*");
+          <p>You can now close this window.</p>
+          <script nonce="${nonce}">
             window.close();
           </script>
         </body>
       </html>
     `);
   } catch (error: any) {
+    const nonce = Math.random().toString(36).substr(2, 10); // Generate a random nonce
+
     console.error(
       'Error exchanging HubSpot code:',
       error.response?.data || error.message
     );
 
     return res.send(`
+      <!DOCTYPE html>
       <html>
+        <head>
+          <title>HubSpot Auth</title>
+        </head>
         <body>
-          <script>
-            window.opener.postMessage({
-              status: "error",
-              message: "HubSpot connection failed"
-            }, "*");
+          <p>There was an error. You can now close this window.</p>
+          <script nonce="${nonce}">
             window.close();
           </script>
         </body>
