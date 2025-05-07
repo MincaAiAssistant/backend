@@ -10,7 +10,7 @@ const REDIRECT_URI = process.env.REDIRECT_URI || '';
 
 export const hubspotCallback = async (req: any, res: any) => {
   const code = req.query.code as string;
-  const userId = req.query.state as string; // Used to pass user ID securely
+  const userId = req.query.state as string;
 
   if (!code) {
     return res.status(400).send('Missing authorization code');
@@ -49,13 +49,18 @@ export const hubspotCallback = async (req: any, res: any) => {
         expires_at = EXCLUDED.expires_at
     `;
 
-    // If called via popup, send postMessage + close window
     return res.send(`
       <html>
-        <script>
+        <body>
+          <script>
+            window.opener.postMessage({
+              status: "success",
+              access_token: "${access_token}"
+            }, "*");
             window.close();
-        </script>
-    </html>
+          </script>
+        </body>
+      </html>
     `);
   } catch (error: any) {
     console.error(
@@ -67,10 +72,12 @@ export const hubspotCallback = async (req: any, res: any) => {
       <html>
         <body>
           <script>
-            window.opener.postMessage({ status: "error", message: "HubSpot connection failed" }, "*");
+            window.opener.postMessage({
+              status: "error",
+              message: "HubSpot connection failed"
+            }, "*");
             window.close();
           </script>
-          <p>Failed to connect to HubSpot. You can close this window.</p>
         </body>
       </html>
     `);
