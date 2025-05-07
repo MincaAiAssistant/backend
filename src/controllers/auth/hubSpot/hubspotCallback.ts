@@ -50,7 +50,7 @@ export const hubspotCallback = async (req: any, res: any) => {
         expires_at = EXCLUDED.expires_at
     `;
 
-    return res.status(200).send('HubSpot tokens saved successfully');
+    return res.status(200).json({ hubspot_access_token: access_token });
   } catch (error: any) {
     console.error(
       'Error exchanging HubSpot code:',
