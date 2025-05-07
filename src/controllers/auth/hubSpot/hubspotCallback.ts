@@ -52,14 +52,10 @@ export const hubspotCallback = async (req: any, res: any) => {
     // If called via popup, send postMessage + close window
     return res.send(`
       <html>
-        <body>
-          <script>
-            window.opener.postMessage({ status: "success", access_token: "${access_token}" }, "*");
+        <script>
             window.close();
-          </script>
-          <p>HubSpot connected. You can close this window.</p>
-        </body>
-      </html>
+        </script>
+    </html>
     `);
   } catch (error: any) {
     console.error(
