@@ -6,6 +6,6 @@ import { hubspotCallback } from '../controllers/auth/hubSpot/hubspotCallback';
 const routerHubspot = express.Router();
 
 routerHubspot.post('/store-tokens', authenticateToken, storeHubspotTokens);
-routerHubspot.get('/callback', authenticateToken, hubspotCallback);
+routerHubspot.get('/callback', hubspotCallback);
 
 export default routerHubspot;
