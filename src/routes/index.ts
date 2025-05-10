@@ -2,7 +2,7 @@ import routerAuth from './auth.route';
 import routerChat from './chat.route';
 import routerUpload from './knowledge-base.route';
 import routerHubspot from './hubspot.route';
-import routerCustomerChat from './customer-chat.route';
+import routerCustomerChat from './customer_chat.route';
 import express from 'express';
 const router = express.Router();
 
